@@ -3,9 +3,9 @@
 🚀 Features
 
   🔐 Authentication & Authorization
-        User Registration & Login
-        Password encrypted using BCrypt
-        JWT Token generation
+       1. User Registration & Login
+       2. Password encrypted using BCrypt
+       3. JWT Token generation
 
 Role-Based Access:
 
@@ -15,13 +15,13 @@ USER → can view/search books
 
 🗄️ Technology Stack
 Technology:
-Spring Boot	-> Main backend framework
-Spring Security	-> Authentication & role-based authorization
-JWT	Token-> based login
-MySQL	-> Database
-JPA / Hibernate	ORM -> for database operations
-Lombok	-> Reduce boilerplate code
-Postman	API -> testing
+1.Spring Boot	-> Main backend framework
+2.Spring Security	-> Authentication & role-based authorization
+3.JWT	Token-> based login
+4.MySQL	-> Database
+5.JPA / Hibernate	ORM -> for database operations
+6.Lombok	-> Reduce boilerplate code
+7.Postman API -> testing
 
 🧩 Project Structure
 src/main/java/com/example/Library

@@ -32,14 +32,10 @@ public class AuthService {
         if(userRepository.findByEmail(req.getEmail()).isPresent()){
            throw new RuntimeException("This email is already registered");
         }
-//        User user = new User();
-//        user.setName(req.getName());
-//        user.setEmail(req.getEmail());
-//        user.setPassword(passwordEncoder.encode(req.getPassword()));
 //        //user.setRole(User.Role.USER);
         User user = new User();
-        user.setEmail(req.getEmail());
         user.setName(req.getName());
+        user.setEmail(req.getEmail());
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setRole(User.Role.valueOf(req.getRole()));
         userRepository.save(user);

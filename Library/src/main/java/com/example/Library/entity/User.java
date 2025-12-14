@@ -2,6 +2,10 @@ package com.example.Library.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.util.HashSet;
+import java.util.Set;
+
+import java.util.Collection;
 
 @Data
 @Entity
@@ -31,4 +35,6 @@ public class User {
         ADMIN,
         USER
     }
+//    @ElementCollection(fetch = FetchType.EAGER)
+//    private Set<String> roles = new HashSet<>(); // ROLE_USER, ROLE_ADMIN
 }

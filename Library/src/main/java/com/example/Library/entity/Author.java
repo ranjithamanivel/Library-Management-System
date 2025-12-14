@@ -1,8 +1,8 @@
 package com.example.Library.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
 
 import java.util.*;
 
@@ -13,6 +13,7 @@ public class Author {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    @JsonManagedReference
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Book> books=new ArrayList<>();
 
@@ -22,17 +23,5 @@ public class Author {
     public Author(Long id, String name) {
         this.id = id;
         this.name = name;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setBooks(List<Book> books) {
-        this.books = books;
     }
 }

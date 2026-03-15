@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -36,9 +37,13 @@ public class JwtService {
                 .compact();
     }
 
-    public boolean isTokenValid(String token, String username) {
-        final String sub = extractUsername(token);
-        return (sub.equals(username) && !isTokenExpired(token));
+//    public boolean isTokenValid(String token, String username) {
+//        final String sub = extractUsername(token);
+//        return (sub.equals(username) && !isTokenExpired(token));
+//    }
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
     public String extractUsername(String token) {
@@ -75,6 +80,10 @@ public class JwtService {
             List<String> out = new ArrayList<>();
             raw.forEach(o -> out.add(String.valueOf(o)));
             return out;
+        }
+        Object roleObj = claims.get("role");
+        if (roleObj != null) {
+            return List.of("ROLE_" + roleObj.toString());
         }
         return Collections.emptyList();
     }

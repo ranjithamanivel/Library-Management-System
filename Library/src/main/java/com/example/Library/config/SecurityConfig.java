@@ -44,11 +44,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/books/**").permitAll()
-                                .requestMatchers("/api/books/**").hasAuthority("ADMIN")
-                                .requestMatchers("/api/users/**").hasAuthority("ADMIN")
-                                .requestMatchers("/api/borrowings/**").hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.POST, "/api/books/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/books/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/books/**").hasRole("ADMIN")
+
+                                .requestMatchers("/api/users/**").hasRole("ADMIN")
+                                .requestMatchers("/api/borrowings/**").hasAnyRole("ADMIN", "USER")
                                 .anyRequest().authenticated()
-//                        .requestMatchers("/","/api/auth/**", "/auth/register",
+//                              .requestMatchers("/","/api/auth/**", "/auth/register",
 //                                "/auth/login",
 //                                "/books/**",
 //                                "/api/books",
@@ -60,13 +63,13 @@ public class SecurityConfig {
 //                                "api/borowings",
 //                                "/api/borrowing/borrow/**",
 //                                "/api/borrowings/return/**"
-//                                ).permitAll() // ✅ allow everything under /api/auth
+//                                ).permitAll()
 //                        .anyRequest().authenticated()
 //                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form.disable())
-                .httpBasic(httpBasic -> httpBasic.disable());
-       // .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .httpBasic(httpBasic -> httpBasic.disable())
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -82,6 +85,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
-
 }
+
+
+

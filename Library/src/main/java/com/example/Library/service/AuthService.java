@@ -3,62 +3,72 @@ package com.example.Library.service;
 import com.example.Library.dto.*;
 import com.example.Library.entity.User;
 import com.example.Library.repository.UserRepository;
+import com.example.Library.config.JwtService;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-
-import javax.management.relation.Relation;
-import java.security.Key;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.Optional;
+import java.util.List;
 
 @Service
 public class AuthService {
-    private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder=new BCryptPasswordEncoder();
-    //SECRET_KEY should be long enough (at least 32 characters for HS256)
-    private final String SECRET_KEY="library_secret_key_123456789012345678901234567890";
 
-    public AuthService(UserRepository userRepository){
-        this.userRepository=userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
+    public AuthService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
-    public RegisterResponse register(RegisterRequest req){
-        if(userRepository.findByEmail(req.getEmail()).isPresent()){
-           throw new RuntimeException("This email is already registered");
+    // ================= REGISTER =================
+    public RegisterResponse register(RegisterRequest request) {
+
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already registered");
         }
-//        //user.setRole(User.Role.USER);
+
         User user = new User();
-        user.setName(req.getName());
-        user.setEmail(req.getEmail());
-        user.setPassword(passwordEncoder.encode(req.getPassword()));
-        user.setRole(User.Role.valueOf(req.getRole()));
-        userRepository.save(user);
-        //user.setRole(User.Role.ADMIN);
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        if (request.getRole() == null) {
+            user.setRole(User.Role.USER);
+        } else {
+            user.setRole(User.Role.valueOf(request.getRole().toUpperCase()));
+        }
 
         userRepository.save(user);
+
         return new RegisterResponse("User registered successfully");
     }
-    public AuthenticationResponse login(LoginRequest req){
-       Optional <User> userOpt=userRepository.findByEmail(req.getEmail());
-       if(userOpt.isEmpty() || !passwordEncoder.matches(req.getPassword(),userOpt.get().getPassword())){
-        throw new RuntimeException("Invalid email or password");
-    }
-       Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
 
-         User user=userOpt.get();
-        String token= Jwts.builder()
-          .setSubject(userOpt.get().getEmail())
-                 .claim("role",user.getRole())
-                 .setIssuedAt(new Date())
-          .setExpiration(new Date(System.currentTimeMillis()+86400000)) // 1 day expiration
-          .signWith(key,SignatureAlgorithm.HS256)
-          .compact();
-         return new AuthenticationResponse(token,"Login successful");
-     }
+    // ================= LOGIN =================
+    public AuthenticationResponse login(LoginRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid email or password");
+        }
+        List<String> roles = List.of("ROLE_" + user.getRole().name());
+
+         // Generate token with roles claim
+        String token = jwtService.generateToken(
+                user.getEmail(),
+                roles
+        );
+
+        // Debug print (helps verify role inside token)
+        System.out.println("Login User: " + user.getEmail());
+        System.out.println("Roles in token: " + roles);
+
+        return new AuthenticationResponse(token, "Login successful");
+    }
 }
